@@ -1,0 +1,843 @@
+/* ==========================================================================
+   Elementor Application Vetting
+   --------------------------------------------------------------------------
+   BRAND COLORS: change the four hex values in the first block below, or use
+   Settings > Application Vetting > Brand colors (no file editing needed).
+   Typography is inherited from the active theme.
+   ========================================================================== */
+
+.eav-root {
+	/* Brand colors */
+	--eav-primary: #4a2268;   /* deep purple */
+	--eav-burgundy: #8c1d40;  /* reject, rejected status */
+	--eav-teal: #13766f;      /* approve, approved status */
+	--eav-orange: #de7a2b;    /* pending status, focus ring */
+
+	/* Neutrals */
+	--eav-ink: #251c2f;
+	--eav-muted: #6a6076;
+	--eav-line: #e4dcec;
+	--eav-surface: #ffffff;
+	--eav-canvas: #f7f4fa;
+
+	/* Derived tints (fallbacks first, color-mix refinement below) */
+	--eav-primary-soft: #efe8f5;
+	--eav-orange-soft: #fbe6d3;
+	--eav-teal-soft: #dcefed;
+	--eav-burgundy-soft: #f4dde4;
+
+	--eav-radius: 10px;
+	--eav-shadow: 0 18px 40px -22px rgba(74, 34, 104, 0.55);
+
+	font-family: inherit;
+	color: var(--eav-ink);
+	line-height: 1.5;
+	box-sizing: border-box;
+}
+
+@supports (color: color-mix(in srgb, red 10%, white)) {
+	.eav-root {
+		--eav-primary-soft: color-mix(in srgb, var(--eav-primary) 9%, #ffffff);
+		--eav-orange-soft: color-mix(in srgb, var(--eav-orange) 20%, #ffffff);
+		--eav-teal-soft: color-mix(in srgb, var(--eav-teal) 14%, #ffffff);
+		--eav-burgundy-soft: color-mix(in srgb, var(--eav-burgundy) 13%, #ffffff);
+	}
+}
+
+.eav-root *,
+.eav-root *::before,
+.eav-root *::after {
+	box-sizing: inherit;
+}
+
+.eav-root [hidden] {
+	display: none !important;
+}
+
+.eav-root :focus-visible {
+	outline: 3px solid var(--eav-orange);
+	outline-offset: 2px;
+}
+
+html.eav-lock {
+	overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Page: header, tabs, grid
+   -------------------------------------------------------------------------- */
+
+.eav-app {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 8px 0 48px;
+}
+
+.eav-root .eav-title {
+	margin: 0;
+	color: var(--eav-primary);
+	font-size: 1.75em;
+	line-height: 1.2;
+	font-weight: 700;
+}
+
+.eav-root .eav-subtitle {
+	margin: 0.4em 0 0;
+	color: var(--eav-muted);
+}
+
+.eav-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 28px;
+	margin: 28px 0 24px;
+	border-bottom: 1px solid var(--eav-line);
+}
+
+.eav-root .eav-tab {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.55em;
+	margin: 0 0 -1px;
+	padding: 10px 0 12px;
+	background: transparent;
+	border: 0;
+	border-bottom: 3px solid transparent;
+	border-radius: 0;
+	box-shadow: none;
+	color: var(--eav-muted);
+	font: inherit;
+	font-weight: 600;
+	letter-spacing: normal;
+	text-transform: none;
+	cursor: pointer;
+}
+
+.eav-root .eav-tab:hover,
+.eav-root .eav-tab:focus {
+	background: transparent;
+	color: var(--eav-primary);
+}
+
+.eav-root .eav-tab[aria-current="true"] {
+	color: var(--eav-primary);
+	border-bottom-color: var(--eav-primary);
+}
+
+.eav-root .eav-tab__count {
+	min-width: 1.9em;
+	padding: 1px 8px;
+	border-radius: 999px;
+	background: var(--eav-primary-soft);
+	color: var(--eav-ink);
+	font-size: 0.8em;
+	font-weight: 700;
+	text-align: center;
+}
+
+.eav-root .eav-tab__count:empty {
+	display: none;
+}
+
+.eav-root .eav-tab[data-status="pending"] .eav-tab__count {
+	background: var(--eav-orange-soft);
+}
+
+.eav-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 18px;
+}
+
+.eav-root .eav-more {
+	margin: 28px 0 0;
+	text-align: center;
+}
+
+.eav-root .eav-state {
+	grid-column: 1 / -1;
+	margin: 0;
+	padding: 48px 24px;
+	border: 1px dashed var(--eav-line);
+	border-radius: var(--eav-radius);
+	color: var(--eav-muted);
+	text-align: center;
+}
+
+.eav-root .eav-state strong {
+	display: block;
+	margin-bottom: 4px;
+	color: var(--eav-ink);
+	font-size: 1.1em;
+}
+
+.eav-root .eav-state--error {
+	border-color: var(--eav-burgundy);
+	color: var(--eav-burgundy);
+}
+
+/* --------------------------------------------------------------------------
+   Cards
+   -------------------------------------------------------------------------- */
+
+.eav-root .eav-card {
+	appearance: none;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	width: 100%;
+	margin: 0;
+	padding: 18px 20px 16px;
+	background: var(--eav-surface);
+	border: 1px solid var(--eav-line);
+	border-left: 5px solid var(--eav-orange);
+	border-radius: var(--eav-radius);
+	box-shadow: none;
+	color: var(--eav-ink);
+	font: inherit;
+	letter-spacing: normal;
+	text-align: left;
+	text-transform: none;
+	cursor: pointer;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.eav-root .eav-card--approved {
+	border-left-color: var(--eav-teal);
+}
+
+.eav-root .eav-card--rejected {
+	border-left-color: var(--eav-burgundy);
+}
+
+.eav-root .eav-card:hover,
+.eav-root .eav-card:focus {
+	background: var(--eav-surface);
+	color: var(--eav-ink);
+	border-color: var(--eav-primary);
+	box-shadow: var(--eav-shadow);
+}
+
+.eav-root .eav-card--approved:hover,
+.eav-root .eav-card--approved:focus {
+	border-left-color: var(--eav-teal);
+}
+
+.eav-root .eav-card--rejected:hover,
+.eav-root .eav-card--rejected:focus {
+	border-left-color: var(--eav-burgundy);
+}
+
+.eav-root .eav-card--pending:hover,
+.eav-root .eav-card--pending:focus {
+	border-left-color: var(--eav-orange);
+}
+
+.eav-root .eav-card__name {
+	color: var(--eav-primary);
+	font-size: 1.125em;
+	font-weight: 700;
+	line-height: 1.3;
+	overflow-wrap: anywhere;
+}
+
+.eav-root .eav-card__email {
+	color: var(--eav-muted);
+	overflow-wrap: anywhere;
+}
+
+.eav-root .eav-card__meta {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 4px 12px;
+	margin-top: 12px;
+	padding-top: 10px;
+	border-top: 1px solid var(--eav-line);
+	color: var(--eav-muted);
+	font-size: 0.875em;
+}
+
+/* --------------------------------------------------------------------------
+   Slide-out panel
+   -------------------------------------------------------------------------- */
+
+.eav-layer {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	visibility: hidden;
+	transition: visibility 0s linear 0.28s;
+}
+
+.eav-layer.is-open {
+	visibility: visible;
+	transition-delay: 0s;
+}
+
+.eav-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(37, 28, 47, 0.55);
+	opacity: 0;
+	transition: opacity 0.28s ease;
+}
+
+.eav-layer.is-open .eav-overlay {
+	opacity: 1;
+}
+
+.eav-panel {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	flex-direction: column;
+	width: min(720px, 100%);
+	background: var(--eav-surface);
+	box-shadow: -24px 0 48px -28px rgba(37, 28, 47, 0.6);
+	transform: translateX(100%);
+	transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+	outline: none;
+}
+
+.eav-layer.is-open .eav-panel {
+	transform: none;
+}
+
+.eav-root .eav-panel__content {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
+.eav-root .eav-panel__head {
+	padding: 20px 28px 18px;
+	border-bottom: 1px solid var(--eav-line);
+}
+
+.eav-root .eav-panel__headrow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.eav-root .eav-panel__title {
+	margin: 0;
+	color: var(--eav-primary);
+	font-size: 1.5em;
+	line-height: 1.25;
+	font-weight: 700;
+	overflow-wrap: anywhere;
+}
+
+.eav-root .eav-panel__meta {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin: 6px 0 0;
+	color: var(--eav-muted);
+}
+
+.eav-root .eav-panel__meta a {
+	color: var(--eav-primary);
+	overflow-wrap: anywhere;
+}
+
+.eav-root .eav-panel__scroll {
+	flex: 1;
+	min-height: 0;
+	padding: 8px 28px 24px;
+	overflow-y: auto;
+}
+
+.eav-root .eav-panel__foot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 12px;
+	padding: 16px 28px;
+	background: var(--eav-surface);
+	border-top: 1px solid var(--eav-line);
+}
+
+.eav-root .eav-panel__foot--info {
+	display: block;
+	background: var(--eav-canvas);
+}
+
+.eav-root .eav-panel__foot p {
+	margin: 0;
+}
+
+.eav-root .eav-panel__foot p + p {
+	margin-top: 4px;
+	color: var(--eav-muted);
+	overflow-wrap: anywhere;
+}
+
+.eav-root .eav-panel__note {
+	flex: 1 1 100%;
+	margin: 0;
+	color: var(--eav-burgundy);
+}
+
+.eav-root .eav-badge {
+	display: inline-block;
+	padding: 3px 12px;
+	border-radius: 999px;
+	background: var(--eav-orange-soft);
+	color: var(--eav-ink);
+	font-size: 0.875em;
+	font-weight: 700;
+}
+
+.eav-root .eav-badge--approved {
+	background: var(--eav-teal-soft);
+}
+
+.eav-root .eav-badge--rejected {
+	background: var(--eav-burgundy-soft);
+}
+
+/* Submitted data */
+
+.eav-root .eav-fields {
+	margin: 0;
+	padding: 0;
+}
+
+.eav-root .eav-field {
+	padding: 14px 0;
+	border-bottom: 1px solid var(--eav-line);
+}
+
+.eav-root .eav-field:last-child {
+	border-bottom: 0;
+}
+
+.eav-root .eav-field dt {
+	margin: 0 0 4px;
+	color: var(--eav-muted);
+	font-size: 0.875em;
+	font-weight: 600;
+}
+
+.eav-root .eav-field dd {
+	margin: 0;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.eav-root .eav-field dd a {
+	color: var(--eav-primary);
+}
+
+.eav-root .eav-empty {
+	color: var(--eav-muted);
+	font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
+.eav-root .eav-btn {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5em;
+	min-height: 44px;
+	margin: 0;
+	padding: 0.7em 1.6em;
+	border: 2px solid transparent;
+	border-radius: 8px;
+	box-shadow: none;
+	font: inherit;
+	font-weight: 700;
+	letter-spacing: normal;
+	line-height: 1.2;
+	text-decoration: none;
+	text-transform: none;
+	cursor: pointer;
+	transition: filter 0.15s ease, background-color 0.15s ease;
+}
+
+.eav-root .eav-btn:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+.eav-root .eav-btn--approve,
+.eav-root .eav-btn--approve:hover,
+.eav-root .eav-btn--approve:focus {
+	background: var(--eav-teal);
+	color: #ffffff;
+}
+
+.eav-root .eav-btn--reject,
+.eav-root .eav-btn--reject:hover,
+.eav-root .eav-btn--reject:focus {
+	background: var(--eav-burgundy);
+	color: #ffffff;
+}
+
+.eav-root .eav-btn--primary,
+.eav-root .eav-btn--primary:hover,
+.eav-root .eav-btn--primary:focus {
+	background: var(--eav-primary);
+	color: #ffffff;
+}
+
+.eav-root .eav-btn--approve:hover:not(:disabled),
+.eav-root .eav-btn--reject:hover:not(:disabled),
+.eav-root .eav-btn--primary:hover:not(:disabled) {
+	filter: brightness(0.9);
+}
+
+.eav-root .eav-btn--quiet,
+.eav-root .eav-btn--quiet:focus {
+	background: transparent;
+	border-color: var(--eav-line);
+	color: var(--eav-primary);
+}
+
+.eav-root .eav-btn--quiet:hover {
+	background: var(--eav-primary-soft);
+	border-color: var(--eav-primary);
+	color: var(--eav-primary);
+}
+
+.eav-root .eav-btn--small {
+	min-height: 36px;
+	padding: 0.4em 1em;
+	font-size: 0.9em;
+}
+
+.eav-root .eav-link-btn {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	margin: 0;
+	padding: 6px 4px;
+	background: transparent;
+	border: 0;
+	border-radius: 4px;
+	box-shadow: none;
+	color: var(--eav-primary);
+	font: inherit;
+	font-weight: 600;
+	letter-spacing: normal;
+	text-decoration: underline;
+	text-transform: none;
+	cursor: pointer;
+}
+
+.eav-root .eav-link-btn:hover,
+.eav-root .eav-link-btn:focus {
+	background: transparent;
+	color: var(--eav-primary);
+	text-decoration: none;
+}
+
+.eav-root .eav-link-btn--light,
+.eav-root .eav-link-btn--light:hover,
+.eav-root .eav-link-btn--light:focus {
+	color: #ffffff;
+}
+
+.eav-root .eav-link-btn--light:focus-visible {
+	outline-color: #ffffff;
+}
+
+.eav-root .eav-icon {
+	font-style: normal;
+	line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Email composer
+   -------------------------------------------------------------------------- */
+
+.eav-root .eav-compose {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
+.eav-root .eav-compose__bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 16px 20px;
+	background: var(--eav-teal);
+	color: #ffffff;
+}
+
+.eav-root .eav-compose__bar--rejected {
+	background: var(--eav-burgundy);
+}
+
+.eav-root .eav-compose__title {
+	margin: 0;
+	color: #ffffff;
+	font-size: 1.1em;
+	font-weight: 700;
+}
+
+.eav-root .eav-compose__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 4px 16px;
+}
+
+.eav-root .eav-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 0 20px;
+	border-bottom: 1px solid var(--eav-line);
+}
+
+.eav-root .eav-row label {
+	flex: 0 0 64px;
+	margin: 0;
+	color: var(--eav-muted);
+	font-weight: 600;
+}
+
+.eav-root .eav-row--locked {
+	background: var(--eav-canvas);
+}
+
+.eav-root .eav-row:focus-within {
+	box-shadow: inset 0 -2px 0 var(--eav-primary);
+}
+
+.eav-root .eav-input {
+	flex: 1;
+	width: 100%;
+	min-width: 0;
+	margin: 0;
+	padding: 14px 0;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	color: var(--eav-ink);
+	font: inherit;
+	outline: none;
+}
+
+.eav-root .eav-input:focus {
+	background: transparent;
+	box-shadow: none;
+	outline: none;
+}
+
+.eav-root .eav-row--locked .eav-input {
+	color: var(--eav-muted);
+	cursor: default;
+}
+
+.eav-root .eav-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding: 8px 20px;
+	background: var(--eav-canvas);
+	border-bottom: 1px solid var(--eav-line);
+}
+
+.eav-root .eav-tool {
+	appearance: none;
+	min-width: 38px;
+	height: 34px;
+	margin: 0;
+	padding: 0 10px;
+	background: var(--eav-surface);
+	border: 1px solid var(--eav-line);
+	border-radius: 6px;
+	box-shadow: none;
+	color: var(--eav-ink);
+	font: inherit;
+	font-size: 0.9em;
+	letter-spacing: normal;
+	text-transform: none;
+	cursor: pointer;
+}
+
+.eav-root .eav-tool:hover,
+.eav-root .eav-tool:focus {
+	background: var(--eav-primary-soft);
+	border-color: var(--eav-primary);
+	color: var(--eav-ink);
+}
+
+.eav-root .eav-tool--bold {
+	font-weight: 700;
+}
+
+.eav-root .eav-tool--italic {
+	font-style: italic;
+}
+
+.eav-root .eav-tool--underline {
+	text-decoration: underline;
+}
+
+.eav-root .eav-linkbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 20px;
+	border-bottom: 1px solid var(--eav-line);
+}
+
+.eav-root .eav-linkbar .eav-input {
+	flex: 1 1 220px;
+	padding: 8px 12px;
+	background: var(--eav-surface);
+	border: 1px solid var(--eav-line);
+	border-radius: 6px;
+}
+
+.eav-root .eav-linkbar .eav-input:focus {
+	border-color: var(--eav-primary);
+}
+
+.eav-root .eav-editor {
+	flex: 1;
+	min-height: 240px;
+	padding: 18px 20px;
+	overflow-y: auto;
+	outline: none;
+	overflow-wrap: anywhere;
+}
+
+.eav-root .eav-editor:focus-visible {
+	outline: 3px solid var(--eav-orange);
+	outline-offset: -3px;
+}
+
+.eav-root .eav-editor p,
+.eav-root .eav-editor ul,
+.eav-root .eav-editor ol {
+	margin: 0 0 1em;
+}
+
+.eav-root .eav-editor a {
+	color: var(--eav-primary);
+}
+
+.eav-root .eav-error {
+	margin: 0;
+	padding: 12px 20px;
+	background: var(--eav-burgundy-soft);
+	color: var(--eav-burgundy);
+	font-weight: 600;
+}
+
+.eav-root .eav-compose .eav-panel__foot {
+	justify-content: space-between;
+}
+
+.eav-root .eav-compose__buttons {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+}
+
+.eav-root .eav-check {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5em;
+	margin: 0;
+	color: var(--eav-ink);
+	cursor: pointer;
+}
+
+.eav-root .eav-check input {
+	width: 1.1em;
+	height: 1.1em;
+	margin: 0;
+	accent-color: var(--eav-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Toast
+   -------------------------------------------------------------------------- */
+
+.eav-toast {
+	position: fixed;
+	left: 50%;
+	bottom: 24px;
+	z-index: 100001;
+	max-width: min(560px, calc(100vw - 32px));
+	padding: 14px 22px;
+	background: var(--eav-primary);
+	border-radius: 8px;
+	color: #ffffff;
+	font-weight: 600;
+	opacity: 0;
+	transform: translate(-50%, 12px);
+	pointer-events: none;
+	transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.eav-toast.is-visible {
+	opacity: 1;
+	transform: translate(-50%, 0);
+}
+
+.eav-toast.is-error {
+	background: var(--eav-burgundy);
+}
+
+/* --------------------------------------------------------------------------
+   Small screens and reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+	.eav-root .eav-panel__head,
+	.eav-root .eav-panel__scroll,
+	.eav-root .eav-panel__foot {
+		padding-left: 18px;
+		padding-right: 18px;
+	}
+
+	.eav-root .eav-panel__foot .eav-btn,
+	.eav-root .eav-compose__buttons,
+	.eav-root .eav-compose__buttons .eav-btn {
+		flex: 1 1 100%;
+	}
+
+	.eav-root .eav-row label {
+		flex-basis: 52px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.eav-layer,
+	.eav-overlay,
+	.eav-panel,
+	.eav-toast,
+	.eav-root .eav-card,
+	.eav-root .eav-btn {
+		transition: none;
+	}
+}
