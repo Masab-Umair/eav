@@ -59,7 +59,7 @@ flowchart TD
     D --> E{"Does the form match the configured identifiers?"}
     E -- "No" --> F["Ignored"]
     E -- "Yes" --> G["Build field rows and detect name and email"]
-    G --> H["Insert mav_application post with status = pending"]
+    G --> H["Insert eav_application post with status = pending"]
 ```
 
 The plugin hooks `elementor_pro/forms/new_record` at priority 20. The callback only reads from the record. It never modifies it, never adds a form error and never stops execution, and the whole handler is wrapped in `try/catch`. If something fails inside the plugin, the form still submits and Elementor's own actions still run.
@@ -79,19 +79,19 @@ If no valid email is found, the application is still saved so nothing is lost. T
 
 ### 2. Data model
 
-Applications are a custom post type, `mav_application`. WordPress limits post type keys to 20 characters, which is why the slug is short.
+Applications are a custom post type, `eav_application`. WordPress limits post type keys to 20 characters, which is why the slug is short.
 
 The post type is private: not public, not queryable, not in search, no REST endpoint, no rewrite rules. Every capability is mapped to `manage_options`, and creating posts from wp-admin is disabled, so records only come from form submissions. The wp-admin list view and a read-only details box exist for auditing.
 
 | Meta key | Contents |
 | --- | --- |
-| `_mav_status` | `pending`, `approved` or `rejected` |
-| `_mav_name`, `_mav_first_name`, `_mav_last_name` | Detected applicant name |
-| `_mav_email` | Applicant email, the only address decision emails are sent to |
-| `_mav_form` | Identifier of the form that produced the record |
-| `_mav_fields` | Array of `id`, `label`, `type`, `value` for every submitted field |
-| `_mav_decided_at`, `_mav_decided_by` | Timestamp and user ID of the deciding administrator |
-| `_mav_email_subject`, `_mav_email_body` | The email that was sent |
+| `_eav_status` | `pending`, `approved` or `rejected` |
+| `_eav_name`, `_eav_first_name`, `_eav_last_name` | Detected applicant name |
+| `_eav_email` | Applicant email, the only address decision emails are sent to |
+| `_eav_form` | Identifier of the form that produced the record |
+| `_eav_fields` | Array of `id`, `label`, `type`, `value` for every submitted field |
+| `_eav_decided_at`, `_eav_decided_by` | Timestamp and user ID of the deciding administrator |
+| `_eav_email_subject`, `_eav_email_body` | The email that was sent |
 
 Status is stored in meta rather than as a post status. That keeps every record `publish` internally, avoids custom post status registration, and makes the per-status queries a plain meta match.
 
@@ -105,7 +105,7 @@ The dashboard is a shortcode, `[application_vetting_dashboard]`, and access is c
 - **The shortcode itself:** a fallback for shortcodes the first check cannot see, such as ones placed in theme templates. It redirects if headers are still unsent, and falls back to a JavaScript redirect if not.
 - **Every AJAX endpoint:** each request checks the capability and a nonce, independent of the page.
 
-A visitor who is not logged in goes to the login page and returns to the dashboard afterwards. A logged-in non-admin is sent to the login form with `reauth=1`. Without it, `wp-login.php` would redirect the logged-in user straight back to the dashboard and loop. The capability is filterable through `mav_required_capability`.
+A visitor who is not logged in goes to the login page and returns to the dashboard afterwards. A logged-in non-admin is sent to the login form with `reauth=1`. Without it, `wp-login.php` would redirect the logged-in user straight back to the dashboard and loop. The capability is filterable through `eav_required_capability`.
 
 ### 4. The AJAX API
 
@@ -113,32 +113,32 @@ The front end talks to three `admin-ajax.php` actions, all registered under `wp_
 
 | Action | Purpose |
 | --- | --- |
-| `mav_list` | Returns a page of 12 applications for one status, whether more pages exist, and the count for every status |
-| `mav_get` | Returns one application's fields, decision details if any, and the personalized starter text for both emails |
-| `mav_decide` | Sends the email and records the decision |
+| `eav_list` | Returns a page of 12 applications for one status, whether more pages exist, and the count for every status |
+| `eav_get` | Returns one application's fields, decision details if any, and the personalized starter text for both emails |
+| `eav_decide` | Sends the email and records the decision |
 
 The AJAX URL is passed to the script as a root-relative path, so requests keep working if the site is opened under both its `www` and non-`www` hostnames.
 
 ### 5. What happens when you press Send
 
-`mav_decide` is where the plugin changes state, so it is deliberately strict:
+`eav_decide` is where the plugin changes state, so it is deliberately strict:
 
 1. Verify capability and nonce.
 2. Validate the decision (`approved` or `rejected`), a non-empty subject and a body with actual text in it.
 3. Load the application and confirm it is still `pending`. A second click or a second admin gets a clear error instead of a duplicate email.
-4. Read the recipient from `_mav_email`. The request has no way to set it.
+4. Read the recipient from `_eav_email`. The request has no way to set it.
 5. Take a short transient lock on the record to block simultaneous submissions.
 6. Send the email.
 7. **Only if sending succeeds**, write the new status, timestamp, user ID, subject and body. If sending fails, the application stays pending and the admin sees the mail error.
-8. Fire `mav_application_decided` and return the updated counts.
+8. Fire `eav_application_decided` and return the updated counts.
 
 The subject is passed through `sanitize_text_field()`, which removes line breaks and so closes off header injection. The body is passed through `wp_kses_post()`.
 
 ### 6. Email delivery
 
-`MAV_Mailer` wraps `wp_mail()`:
+`EAV_Mailer` wraps `wp_mail()`:
 
-- Sends HTML with a small table-based wrapper that works in common mail clients, and is filterable through `mav_email_html`.
+- Sends HTML with a small table-based wrapper that works in common mail clients, and is filterable through `eav_email_html`.
 - Builds a plain-text alternative from the body and attaches it as `AltBody` through `phpmailer_init`, which helps spam scoring.
 - Adds optional `From`, `Reply-To` and `Bcc` headers. The Bcc is the sending admin, if they ticked "Send me a copy".
 - Listens to `wp_mail_failed` for the duration of the call so the real error message can be shown, then removes its listeners.
@@ -156,7 +156,7 @@ Starter text for each email is configurable and supports `{first_name}`, `{last_
 
 ### 8. Styling
 
-All colors come from CSS custom properties on `.mav-root`: `--mav-primary`, `--mav-burgundy`, `--mav-teal` and `--mav-orange`. The lighter tints are derived from those with `color-mix()`, behind an `@supports` check with fixed fallbacks, so changing four hex values re-themes everything. Colors are also editable from the settings page, which outputs the overrides as inline CSS.
+All colors come from CSS custom properties on `.eav-root`: `--eav-primary`, `--eav-burgundy`, `--eav-teal` and `--eav-orange`. The lighter tints are derived from those with `color-mix()`, behind an `@supports` check with fixed fallbacks, so changing four hex values re-themes everything. Colors are also editable from the settings page, which outputs the overrides as inline CSS.
 
 Status is color-coded consistently: orange for pending, teal for approved, burgundy for rejected. Typography is inherited from the active theme, and every button restates its own properties so aggressive theme or Elementor kit button styles do not bleed in. Motion respects `prefers-reduced-motion`.
 
@@ -183,17 +183,17 @@ Status is color-coded consistently: orange for pending, teal for approved, burgu
 
 ```
 plugin-root/
-├── <main plugin file>.php           Plugin header, constants, includes
+├── elementor-application-vetting.php Plugin header, constants, includes
 ├── uninstall.php                    Opt-in data removal
 ├── includes/
-│   ├── class-mav-plugin.php         Bootstrap and activation
-│   ├── class-mav-capture.php        Elementor Pro form hook
-│   ├── class-mav-post-type.php      Post type, admin columns, details box
-│   ├── class-mav-helpers.php        Options, identity detection, placeholders
-│   ├── class-mav-dashboard.php      Shortcode, access guard, assets
-│   ├── class-mav-ajax.php           list, get and decide endpoints
-│   ├── class-mav-mailer.php         wp_mail wrapper
-│   └── class-mav-settings.php       Settings page
+│   ├── class-eav-plugin.php         Bootstrap and activation
+│   ├── class-eav-capture.php        Elementor Pro form hook
+│   ├── class-eav-post-type.php      Post type, admin columns, details box
+│   ├── class-eav-helpers.php        Options, identity detection, placeholders
+│   ├── class-eav-dashboard.php      Shortcode, access guard, assets
+│   ├── class-eav-ajax.php           list, get and decide endpoints
+│   ├── class-eav-mailer.php         wp_mail wrapper
+│   └── class-eav-settings.php       Settings page
 ├── templates/
 │   └── dashboard.php                Dashboard markup
 └── assets/
@@ -205,10 +205,10 @@ plugin-root/
 
 | Hook | Type | Use |
 | --- | --- | --- |
-| `mav_application_captured` | action | Runs after an application is stored. Receives the post ID, field rows and detected identity |
-| `mav_application_decided` | action | Runs after the email is sent and the status saved. Receives the post ID, decision, subject and body |
-| `mav_email_html` | filter | Replace the HTML wrapper around the email body |
-| `mav_required_capability` | filter | Change the capability required to use the dashboard (default `manage_options`) |
+| `eav_application_captured` | action | Runs after an application is stored. Receives the post ID, field rows and detected identity |
+| `eav_application_decided` | action | Runs after the email is sent and the status saved. Receives the post ID, decision, subject and body |
+| `eav_email_html` | filter | Replace the HTML wrapper around the email body |
+| `eav_required_capability` | filter | Change the capability required to use the dashboard (default `manage_options`) |
 
 ## Design decisions and trade-offs
 
@@ -225,7 +225,7 @@ Issues and pull requests are welcome.
 - **Open an issue first** for anything beyond a small fix, so the approach can be agreed before code is written.
 - **Keep pull requests to one concern.** A bug fix and a refactor should be separate.
 - **Follow the [WordPress Coding Standards](https://developer.wordpress.org/coding-standards/wordpress-coding-standards/).** The existing code uses tabs, Yoda conditions and `phpcs:ignore` comments where a rule is deliberately bypassed. Say why when you add one.
-- **Keep the prefixes.** PHP classes use `MAV_`, hooks, options and meta use `mav_` or `_mav_`, and CSS classes use `mav-`, so nothing collides with the theme or other plugins.
+- **Keep the prefixes.** PHP classes use `EAV_`, hooks, options and meta use `eav_` or `_eav_`, and CSS classes use `eav-`, so nothing collides with the theme or other plugins.
 - **Escape late, sanitize early.** Any new output goes through the matching `esc_*` function, and any new input is sanitized and capability-checked. Anything that changes state also needs a nonce.
 - **Keep the front end dependency-free.** No build step and no third-party scripts or CDNs.
 - **Test against a real Elementor Pro form.** Describe what you tested in the pull request: the form fields used, the WordPress and PHP versions, and whether Elementor's own email still arrived.
